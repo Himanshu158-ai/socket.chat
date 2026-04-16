@@ -3,8 +3,6 @@ import { useMemo } from 'react';
 import io from "socket.io-client"
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
-import dotenv from "dotenv"
-dotenv.config();
 
 const App = () => {
 
