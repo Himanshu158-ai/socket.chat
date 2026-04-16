@@ -10,7 +10,7 @@ const App = () => {
   const [input, setInput] = useState("");
   const [name, setName] = useState("");
   const [popup, setpopup] = useState(false)
-  const socket = useMemo(() => io(import.meta.env.VITE_SERVER_URL, { autoConnect: false }), [])
+  const socket = useMemo(() => io(import.meta.env.VITE_SERVER_URL, { autoConnect: false, transports: ["websocket"] }), [])
   const [myid, setMyid] = useState("")
   const [hasJoined, setHasJoined] = useState(false)
   const [typing, setTyping] = useState("")
