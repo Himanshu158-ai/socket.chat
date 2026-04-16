@@ -3,6 +3,8 @@ import { useMemo } from 'react';
 import io from "socket.io-client"
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
+import dotenv from "dotenv"
+dotenv.config();
 
 const App = () => {
 
@@ -10,7 +12,7 @@ const App = () => {
   const [input, setInput] = useState("");
   const [name, setName] = useState("");
   const [popup, setpopup] = useState(false)
-  const socket = useMemo(() => io("http://localhost:3000", { autoConnect: false }), [])
+  const socket = useMemo(() => io(import.meta.env.VITE_SERVER_URL, { autoConnect: false }), [])
   const [myid, setMyid] = useState("")
   const [hasJoined, setHasJoined] = useState(false)
   const [typing, setTyping] = useState("")
