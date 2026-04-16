@@ -46,8 +46,6 @@ const App = () => {
 
     socket.on("connect", () => {
       setMyid(socket.id);
-
-      // 👇 ab safe hai emit karna
       socket.emit("user-joined", name);
     });
 
@@ -169,11 +167,11 @@ const App = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
 
           {/* Popup Box */}
-          <div className="bg-white w-80 p-6 rounded-2xl shadow-2xl">
+          <div className="bg-white w-70 p-6 rounded-2xl shadow-2xl">
 
             {/* Title */}
             <h2 className="text-xl font-bold text-center text-gray-800 mb-2">
-              Welcome 👋
+              Welcome guyzzz
             </h2>
 
             {/* Description */}
@@ -182,7 +180,7 @@ const App = () => {
             </p>
 
             {/* ⚠️ Warning */}
-            <p className="text-xs text-red-500 text-center mb-5 bg-red-50 border border-red-200 py-2 px-3 rounded-md">
+            <p className="text-sm text-red-500 text-center mb-5 bg-red-50 border border-red-200 py-2 px-3 rounded-md">
               ⚠️ Please do not refresh the page, otherwise you will be logged out again.
             </p>
 
