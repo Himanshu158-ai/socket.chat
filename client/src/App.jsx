@@ -11,14 +11,7 @@ const App = () => {
   const [name, setName] = useState("");
   const [popup, setpopup] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  // Dummy list of online members
-  // const dummyMembers = [
-  //   { id: 1, name: "Alice", isOnline: true },
-  //   { id: 2, name: "Bob", isOnline: true },
-  //   { id: 3, name: "Charlie", isOnline: true },
-  //   { id: 4, name: "David", isOnline: true },
-  // ];
+  const bottomRef = useRef(null);
 
   const [onlineMembers, setOnlineMembers] = useState([]);
   const socket = useMemo(() => io(import.meta.env.VITE_SERVER_URL, { autoConnect: false, transports: ["websocket"] }), [])
@@ -30,6 +23,10 @@ const App = () => {
     e.preventDefault();
     e.returnValue = "";
   };
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [message]);
 
   function getCurrentTime() {
     const now = new Date();
@@ -76,7 +73,7 @@ const App = () => {
       socket.off("connect");
       socket.off("recived-user");
       socket.off("user-left");
-      socket.off("update-online-members"); 
+      socket.off("update-online-members");
     };
   }, [hasJoined]);
 
@@ -144,7 +141,7 @@ const App = () => {
             </div>
             <div className="flex items-center gap-3">
               <p className="hidden sm:block text-sm text-gray-600">Signed in as {name}</p>
-              <button 
+              <button
                 onClick={() => setIsDrawerOpen(true)}
                 className="p-1 hover:bg-gray-200 rounded-md transition-colors"
                 title="Online Members"
@@ -158,8 +155,8 @@ const App = () => {
 
           {/* Online Members Drawer overlay */}
           {isDrawerOpen && (
-            <div 
-              className="absolute inset-0 bg-black/20 z-10" 
+            <div
+              className="absolute inset-0 bg-black/20 z-10"
               onClick={() => setIsDrawerOpen(false)}
             />
           )}
@@ -202,7 +199,7 @@ const App = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 no-scrollbar">
             {
               message.map((msg, idx) => {
                 return (
@@ -215,21 +212,30 @@ const App = () => {
                 )
               })
             }
+            <div ref={bottomRef}></div>
 
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t bg-white flex items-center gap-2">
-            <input
+            <div className="p-3 border-t bg-white flex items-center gap-2 no-scrollbar">
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               type="text"
+              rows={1}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-2 border rounded-full outline-none focus:ring-2 focus:ring-green-400"
+              
+              className="flex-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-green-400 resize-none no-scrollbar"
               onSelect={handleTyping}
+              onKeyDown={(e)=>{
+                if(e.key==="Enter" && !e.shiftKey){
+                  e.preventDefault();
+                  handelMessage();
+                }
+              }}
 
             />
-            <button className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-full" onClick={handelMessage}>
+            <button className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg" onClick={handelMessage}>
               Send
             </button>
           </div>
@@ -281,3 +287,5 @@ const App = () => {
 }
 
 export default App
+
+
