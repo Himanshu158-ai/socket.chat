@@ -22,16 +22,24 @@ app.get('/', (req, res) => {
     res.send("starteddd");
 })
 
+let onlineUsers = [];
+
 io.on("connection", (socket) => {
     socket.on("user-joined", (name) => {
         socket.username = name;
+        if (!onlineUsers.find(user => user.id === socket.id)) {
+            onlineUsers.push({ id: socket.id, name });
+        }
         socket.broadcast.emit("recived-user", name);
+        io.emit("update-online-members", onlineUsers);
     })
     socket.on("send-message", (data) => {
         io.emit("recived-message", data);
     })
     socket.on("disconnect", () => {
         socket.broadcast.emit("user-left", socket.username)
+        onlineUsers = onlineUsers.filter(user => user.id !== socket.id);
+        io.emit("update-online-members", onlineUsers);
     })
     socket.on("typing", (name) => {
         socket.broadcast.emit("recived-typing", name);

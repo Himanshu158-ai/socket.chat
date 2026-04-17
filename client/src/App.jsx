@@ -10,6 +10,17 @@ const App = () => {
   const [input, setInput] = useState("");
   const [name, setName] = useState("");
   const [popup, setpopup] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Dummy list of online members
+  // const dummyMembers = [
+  //   { id: 1, name: "Alice", isOnline: true },
+  //   { id: 2, name: "Bob", isOnline: true },
+  //   { id: 3, name: "Charlie", isOnline: true },
+  //   { id: 4, name: "David", isOnline: true },
+  // ];
+
+  const [onlineMembers, setOnlineMembers] = useState([]);
   const socket = useMemo(() => io(import.meta.env.VITE_SERVER_URL, { autoConnect: false, transports: ["websocket"] }), [])
   const [myid, setMyid] = useState("")
   const [hasJoined, setHasJoined] = useState(false)
@@ -53,6 +64,10 @@ const App = () => {
       toast.success(`${name} joined the chat`);
     });
 
+    socket.on("update-online-members", (data) => {
+      setOnlineMembers(data);
+    });
+
     socket.on("user-left", (name) => {
       toast.error(`${name} left the chat`);
     });
@@ -61,6 +76,7 @@ const App = () => {
       socket.off("connect");
       socket.off("recived-user");
       socket.off("user-left");
+      socket.off("update-online-members"); 
     };
   }, [hasJoined]);
 
@@ -113,20 +129,76 @@ const App = () => {
     <div className="h-screen flex items-center justify-center bg-gray-200">
       {/* Chat Container */}
       {popup ? (
-        <div className="w-full max-w-md h-[90vh] bg-white shadow-lg rounded-lg flex flex-col overflow-hidden">
+        <div className="w-full max-w-md h-[90vh] bg-white shadow-lg rounded-lg flex flex-col overflow-hidden relative">
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gray-100 border-b">
             <div className="flex items-center gap-3">
               <div className="bg-green-600 text-white w-8 h-8 flex items-center justify-center rounded-full">
-                {name[0]}
+                {name && name.length > 0 ? name[0] : ""}
               </div>
               <div>
                 <p className="font-semibold text-sm">Group chat</p>
                 <p className="text-xs text-gray-500">{typing.length > 0 ? `${typing} is typing...` : ""}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-600">Signed in as {name}</p>
+            <div className="flex items-center gap-3">
+              <p className="hidden sm:block text-sm text-gray-600">Signed in as {name}</p>
+              <button 
+                onClick={() => setIsDrawerOpen(true)}
+                className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                title="Online Members"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Online Members Drawer overlay */}
+          {isDrawerOpen && (
+            <div 
+              className="absolute inset-0 bg-black/20 z-10" 
+              onClick={() => setIsDrawerOpen(false)}
+            />
+          )}
+
+          {/* Online Members Drawer */}
+          <div className={`absolute top-0 right-0 h-full w-64 bg-white shadow-2xl z-20 transform transition-transform duration-300 ease-in-out ${isDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-gray-800">Online Members</h3>
+              <button onClick={() => setIsDrawerOpen(false)} className="text-gray-500 hover:text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto h-[calc(100%-60px)]">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="bg-green-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold">
+                      {name && name.length > 0 ? name[0] : ""}
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-800">{name} (You)</span>
+                </li>
+
+                {onlineMembers.filter(m => m.id !== myid).map(member => (
+                  <li key={member.id} className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="bg-blue-500 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold">
+                        {member.name && member.name.length > 0 ? member.name[0] : ""}
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{member.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Messages */}
